@@ -50,7 +50,6 @@ parser.add_argument('--eval_cluster_type', type=str, default='Louvain', help='Lo
 params = parser.parse_args()
 params.device = device
 
-# _________ Root Path _________ #
 # Visium Spatial Gene Expression data from 10x Genomics.
 # Database: https://support.10xgenomics.com/spatial-gene-expression/datasets
 # sample_id_list = [‘V1_Breast_Cancer_Block_A_Section_1’, ‘V1_Breast_Cancer_Block_A_Section_2’,
@@ -68,21 +67,21 @@ params.device = device
 # ‘Targeted_Visium_Human_OvarianCancer_Immunology’, ‘Parent_Visium_Human_OvarianCancer’,
 # ‘Targeted_Visium_Human_ColorectalCancer_GeneSignature’, ‘Parent_Visium_Human_ColorectalCancer]
 
-# Data download folder
-data_root = '/media/hzfu/Data/BioMultiModal/data/spatial_data/10x_Genomics_Visium/'
-# data_root = '/Users/hzfu/Documents/Project_code/DeepMSC_data/spatial_data/10x_Genomics_Visium/'
-proj_name = 'V1_Breast_Cancer_Block_A_Section_1'
-save_fold = os.path.join('./SEDR_result/10x_Genomics_Visium/', proj_name)
+# ################## Data download folder
+data_root = './spatial_datasets/10x_Genomics_Visium/'
+data_name = 'V1_Breast_Cancer_Block_A_Section_1'
+save_fold = os.path.join('./SEDR_result/10x_Genomics_Visium/', data_name)
 
-# _________ Load file _________ #
-adata_h5 = load_visium_sge(sample_id=proj_name, save_path=data_root)
-adata_X = adata_preprocess(adata_h5, min_cells=5, pca_n_comps=300)
+# ################## Load data
+adata_h5 = load_visium_sge(sample_id=data_name, save_path=data_root)
+adata_h5.var_names_make_unique()
+adata_X = adata_preprocess(adata_h5, min_cells=5, pca_n_comps=params.cell_feat_dim)
 graph_dict = graph_construction(adata_h5.obsm['spatial'], adata_h5.shape[0], params)
 params.cell_num = adata_h5.shape[0]
 params.save_path = mk_dir(save_fold)
 print('==== Graph Construction Finished')
 
-# ----------- Node Feature training --------------
+# ################## Model training
 sed_net = SEDR_Train(adata_X, graph_dict, params)
 if params.using_dec:
     sed_net.train_with_dec()
@@ -92,20 +91,19 @@ sed_feat, _, _, _ = sed_net.process()
 
 np.savez(os.path.join(params.save_path, "SED_result.npz"), sed_feat=sed_feat, deep_Dim=params.feat_hidden2)
 
-# ################## result plot
+# ################## Result plot
 adata_sed = anndata.AnnData(sed_feat)
 adata_sed.uns['spatial'] = adata_h5.uns['spatial']
 adata_sed.obsm['spatial'] = adata_h5.obsm['spatial']
 
 sc.pp.neighbors(adata_sed, n_neighbors=params.eval_graph_n)
 sc.tl.umap(adata_sed)
-sc.tl.leiden(adata_sed, key_added="SEDR_leiden", resolution=params.eval_resolution) 
-
+sc.tl.leiden(adata_sed, key_added="SEDR_leiden", resolution=params.eval_resolution)
 sc.pl.spatial(adata_sed, img_key="hires", color=['SEDR_leiden'])
-plt.savefig(os.path.join(params.save_path, "SEDR_leiden_plot.pdf"), bbox_inches='tight', dpi=200)
+plt.savefig(os.path.join(params.save_path, "SEDR_leiden_plot.pdf"), bbox_inches='tight', dpi=150)
 
 df_result = pd.DataFrame(adata_sed.obs['SEDR_leiden'], columns=['SEDR_leiden'])
-df_result.to_csv(os.path.join(params.save_path, "SEDR_leiden_n_"""+str(params.eval_resolution)+"_result.tsv"),
+df_result.to_csv(os.path.join(params.save_path, "SEDR_leiden_n_"+str(params.eval_resolution)+"_result.tsv"),
                  sep='\t', index=False)
 
 

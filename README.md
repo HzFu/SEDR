@@ -53,7 +53,7 @@ SDER utilizes anndata (based on Scanpy) as input. We provide three examples:
    
    ![](figure/Visium_result.jpg)
 
-2. `run_SEDR_DLPFC_data.py`: The demo code for *'LIBD human dorsolateral prefrontal cortex (DLPFC, <http://spatial.libd.org/spatialLIBD/>)'* data .
+2. `run_SEDR_DLPFC_data.py`: The demo code for *'LIBD human dorsolateral prefrontal cortex (DLPFC, <http://research.libd.org/spatialLIBD/>)'* data .
    
    ![](figure/DLPFC_result.jpg)
 

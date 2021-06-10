@@ -33,6 +33,7 @@ parser.add_argument('--gcn_hidden1', type=int, default=32, help='Dim of GCN hidd
 parser.add_argument('--gcn_hidden2', type=int, default=8, help='Dim of GCN hidden 2-layer.')
 parser.add_argument('--p_drop', type=float, default=0.2, help='Dropout rate.')
 parser.add_argument('--using_dec', type=bool, default=True, help='Using DEC loss.')
+parser.add_argument('--using_mask', type=bool, default=True, help='Using mask for multi-dataset.')
 parser.add_argument('--feat_w', type=float, default=10, help='Weight of DNN loss.')
 parser.add_argument('--gcn_w', type=float, default=0.1, help='Weight of GCN loss.')
 parser.add_argument('--dec_kl_w', type=float, default=100, help='Weight of DEC loss.')
@@ -50,12 +51,11 @@ params = parser.parse_args()
 params.device = device
 
 # ################ Path setting
-# data_root = '/media/hzfu/Data/BioMultiModal/data/spatial_data/DLPFC/'
-data_root = '/Users/hzfu/Documents/Project_code/DeepMSC_data/spatial_data/DLPFC/'
-# '151507', '151508', '151509', '151510', '151669', '151670', '151671', '151672', '151673', '151674', '151675', '151676' 
+data_root = './spatial_datasets/DLPFC/'
+# '151507', '151508', '151509', '151510', '151669', '151670',
+# '151671', '151672', '151673', '151674', '151675', '151676'
 # Batch correction list
 proj_list = ['151507', '151672', '151673']
-# set saving result path
 save_root = './SEDR_result/UBC/'
 
 # ################ Combining dataset
@@ -64,7 +64,7 @@ for proj_idx in range(len(proj_list)):
     adata_h5_tmp.obs['batch_label'] = np.ones(adata_h5_tmp.shape[0]) * proj_idx
     graph_dict_tmp = graph_construction(adata_h5_tmp.obsm['spatial'], adata_h5_tmp.shape[0], params)
 
-    # ########## Load GT label, if have
+    # ########## Load layer_guess label, if have
     df_label = pd.read_csv(os.path.join(data_root, proj_list[proj_idx], "metadata.tsv"), sep='\t')
     adata_h5_tmp.obs['layer_guess'] = np.array(df_label['layer_guess'].to_list())
 
@@ -87,7 +87,7 @@ params.save_path = mk_dir(os.path.join(save_root, proj_name))
 
 adata_X = adata_preprocess(adata_h5, min_cells=5, pca_n_comps=params.cell_feat_dim)
 
-# ----------- Node Feature training --------------
+# ######################## Model training
 sed_net = SEDR_Train(adata_X, graph_dict, params)
 if params.using_dec:
     sed_net.train_with_dec()
@@ -97,7 +97,7 @@ sed_feat, _, _, _ = sed_net.process()
 
 np.savez(os.path.join(params.save_path, "SED_result.npz"), sed_feat=sed_feat, deep_Dim=params.feat_hidden2)
 
-######################### SEDR analysis
+# ######################## SEDR analysis
 adata_sed = anndata.AnnData(sed_feat)
 adata_sed.obsm['spatial'] = adata_h5.obsm['spatial']
 adata_sed.obs['batch_label'] = pd.Categorical(adata_h5.obs['batch_label'])
@@ -105,19 +105,8 @@ adata_sed.obs['layer_guess'] = pd.Categorical(adata_h5.obs['layer_guess'])
 sc.pp.neighbors(adata_sed)
 sc.tl.umap(adata_sed)
 sc.tl.leiden(adata_sed, key_added="SEDR_leiden", resolution=params.eval_resolution)
-sc.pl.umap(adata_sed, color=["layer_guess", "batch_label"],
-           title=["layer_guess",  "Batch"], color_map="Tab10")
-plt.savefig(os.path.join(params.save_path, "SEDR_plot.jpg"), bbox_inches='tight')
-#
-# # ######################### original analysis
-# # adata_h5.obs['batch_label'] = pd.Categorical(adata_h5.obs['batch_label'])
-# # sc.pp.normalize_per_cell(adata_h5, counts_per_cell_after=1e6)
-# # sc.pp.log1p(adata_h5)
-# # sc.pp.pca(adata_h5, n_comps=15)
-# # sc.pp.neighbors(adata_h5)
-# # sc.tl.umap(adata_h5)
-# # sc.tl.leiden(adata_h5, key_added="PCA_leiden", resolution=params.eval_resolution)
-# # sc.pl.umap(adata_h5, color=["gt_label", "PCA_leiden", "batch_label"])
-# # plt.savefig(os.path.join(params.save_path, "original_plot.jpg"), bbox_inches='tight')
-#
-#
+sc.pl.umap(adata_sed, color=["layer_guess", "batch_label"], title=["layer_guess",  "Batch"], color_map="Tab10")
+plt.savefig(os.path.join(params.save_path, "SEDR_plot.jpg"), bbox_inches='tight', dpi=150)
+
+
+
