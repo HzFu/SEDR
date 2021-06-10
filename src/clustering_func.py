@@ -36,16 +36,19 @@ def proc_clustering(feature, params):
 def eval_clustering(feat_dict, save_path, params, label=None):
     # clustering
     sed_labels = proc_clustering(feat_dict['sed_feat'], params)
-    deep_labels = proc_clustering(feat_dict['deep_feat'], params)
-
     df_result = pd.DataFrame(sed_labels, columns=['sed_labels'])
-    df_result['deep_labels'] = deep_labels
+
+    if feat_dict['deep_labels'] is not None:
+        df_result['deep_labels'] = proc_clustering(feat_dict['deep_feat'], params)
     if label is not None:
         df_result['layer_guess'] = label
     if feat_dict['gnn_feat'] is not None:
         df_result['gnn_labels'] = proc_clustering(feat_dict['gnn_feat'], params)
 
-    df_result.to_csv(os.path.join(save_path, params.eval_cluster_type + "_clustering_result.tsv"), sep='\t', index=False)
+    df_result.to_csv(os.path.join(save_path, params.eval_cluster_type + "_k_" +
+                                  str(params.eval_cluster_n) + "_result.tsv"), sep='\t', index=False)
+
+    return sed_labels
 
 
 def plot_umap(node_feature, latent_z, save_path, params, label=None, colormap='tab20'):

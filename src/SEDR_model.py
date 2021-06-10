@@ -51,8 +51,8 @@ class InnerProductDecoder(nn.Module):
 
     def forward(self, z):
         z = F.dropout(z, self.dropout, training=self.training)
-        adj = self.act(torch.mm(z, z.t()))
-        return adj
+        adj = self.act(torch.mm(z, z.t())) 
+        return adj 
 
 
 class SEDR(nn.Module):

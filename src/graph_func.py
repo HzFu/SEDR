@@ -22,7 +22,7 @@ def edgeList2edgeDict(edgeList, nodesize):
         tmplist.append(end2)
         graphdict[end1] = tmplist
 
-        # check and get full matrix
+    # check and get full matrix
     for i in range(nodesize):
         if i not in tdict:
             graphdict[i] = []
@@ -50,7 +50,26 @@ def preprocess_graph(adj):
 
 
 # ====== Graph construction
-def graph_construction(adata_Adj, cell_N):
+def graph_computing(adj_coo, cell_num, params):
+    edgeList = []
+    for node_idx in range(cell_num):
+        tmp = adj_coo[node_idx, :].reshape(1, -1)
+        distMat = distance.cdist(tmp, adj_coo, params.knn_distanceType)
+        res = distMat.argsort()[:params.k + 1]
+        tmpdist = distMat[0, res[0][1:params.k + 1]]
+        boundary = np.mean(tmpdist) + np.std(tmpdist)
+        for j in np.arange(1, params.k + 1):
+            if distMat[0, res[0][j]] <= boundary:
+                weight = 1.0
+            else:
+                weight = 0.0
+            edgeList.append((node_idx, res[0][j], weight))
+
+    return edgeList
+
+
+def graph_construction(adj_coo, cell_N, params):
+    adata_Adj = graph_computing(adj_coo, cell_N, params)
     graphdict = edgeList2edgeDict(adata_Adj, cell_N)
     adj_org = nx.adjacency_matrix(nx.from_dict_of_lists(graphdict))
 
@@ -71,26 +90,24 @@ def graph_construction(adata_Adj, cell_N):
         "adj_label": adj_label_m1,
         "norm_value": norm_m1
     }
+
+    # mask is binary matrix for semi-supervised/multi-dataset (1-valid edge, 0-unknown edge)
+    if params.using_mask is True:
+        graph_dict["adj_mask"] = torch.ones(cell_N, cell_N)
+
     return graph_dict
 
 
-def graph_computing(Adj_coo, cell_num, distanceType='euclidean', k=10):
-    edgeList = []
-    for node_idx in range(cell_num):
-        tmp = Adj_coo[node_idx, :].reshape(1, -1)
-        distMat = distance.cdist(tmp, Adj_coo, distanceType)
-        res = distMat.argsort()[:k + 1]
-        tmpdist = distMat[0, res[0][1:k + 1]]
-        boundary = np.mean(tmpdist) + np.std(tmpdist)
-        for j in np.arange(1, k + 1):
-            # TODO: check, only exclude large outliners
-            # if (distMat[0,res[0][j]]<=mean+std) and (distMat[0,res[0][j]]>=mean-std):
-            if distMat[0, res[0][j]] <= boundary:
-                weight = 1.0
-            else:
-                weight = 0.0
-            edgeList.append((node_idx, res[0][j], weight))
+def combine_graph_dict(dict_1, dict_2):
+    # TODO add adj_org
+    tmp_adj_norm = torch.block_diag(dict_1['adj_norm'].to_dense(), dict_2['adj_norm'].to_dense())
+    graph_dict = {
+        "adj_norm": tmp_adj_norm.to_sparse(),
+        "adj_label": torch.block_diag(dict_1['adj_label'], dict_2['adj_label']),
+        "adj_mask": torch.block_diag(dict_1['adj_mask'], dict_2['adj_mask']),
+        "norm_value": np.mean([dict_1['norm_value'], dict_2['norm_value']])
+    }
+    return graph_dict
 
-    return edgeList
 
 

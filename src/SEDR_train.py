@@ -20,7 +20,11 @@ def reconstruction_loss(decoded, x):
     return loss_rcn
 
 
-def gcn_loss(preds, labels, mu, logvar, n_nodes, norm):
+def gcn_loss(preds, labels, mu, logvar, n_nodes, norm, mask=None):
+    if mask is not None:
+        preds = preds * mask
+        labels = labels * mask
+
     cost = norm * F.binary_cross_entropy_with_logits(preds, labels)
 
     # see Appendix B from VAE paper:
@@ -41,6 +45,10 @@ class SEDR_Train:
         self.adj_norm = graph_dict["adj_norm"].to(self.device)
         self.adj_label = graph_dict["adj_label"].to(self.device)
         self.norm_value = graph_dict["norm_value"]
+        if params.using_mask is True:
+            self.adj_mask = graph_dict["adj_mask"].to(self.device)
+        else:
+            self.adj_mask = None
 
         self.model = SEDR(self.params.cell_feat_dim, self.params).to(self.device)
         self.optimizer = torch.optim.Adam(params=list(self.model.parameters()),
@@ -57,9 +65,9 @@ class SEDR_Train:
             latent_z, mu, logvar, de_feat, _, feat_x, _ = self.model(self.node_X, self.adj_norm)
 
             loss_gcn = gcn_loss(preds=self.model.dc(latent_z), labels=self.adj_label, mu=mu,
-                                logvar=logvar, n_nodes=self.params.cell_num, norm=self.norm_value)
+                                logvar=logvar, n_nodes=self.params.cell_num, norm=self.norm_value, mask=self.adj_label)
             loss_rec = reconstruction_loss(de_feat, self.node_X)
-            loss = self.params.feat_w * loss_rec +loss_gcn
+            loss = self.params.feat_w * loss_rec + self.params.gcn_w * loss_gcn
             loss.backward()
             self.optimizer.step()
 
@@ -120,11 +128,11 @@ class SEDR_Train:
             self.optimizer.zero_grad()
             latent_z, mu, logvar, de_feat, out_q, _, _ = self.model(self.node_X, self.adj_norm)
             loss_gcn = gcn_loss(preds=self.model.dc(latent_z), labels=self.adj_label, mu=mu,
-                                logvar=logvar, n_nodes=self.params.cell_num, norm=self.norm_value)
+                                logvar=logvar, n_nodes=self.params.cell_num, norm=self.norm_value, mask=self.adj_label)
             loss_rec = reconstruction_loss(de_feat, self.node_X)
             # clustering KL loss
             loss_kl = F.kl_div(out_q.log(), torch.tensor(tmp_p).to(self.device)).to(self.device)
-            loss = loss_gcn + self.params.dec_kl_w * loss_kl + self.params.feat_w * loss_rec
+            loss = self.params.gcn_w * loss_gcn + self.params.dec_kl_w * loss_kl + self.params.feat_w * loss_rec
             loss.backward()
             self.optimizer.step()
 
