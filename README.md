@@ -24,8 +24,7 @@ matplotlib==3.3.4
 numpy==1.20.2
 python-igraph==0.9.1
 python-louvain==0.15 
-scanpy==1.7.2
-scikit-image==0.18.1
+scanpy==1.7.2 
 scikit-learn==0.24.1
 scikit-network==0.23.1
 scipy==1.6.3
@@ -37,7 +36,7 @@ tqdm==4.59.0
 umap-learn==0.5.1 
 ```
 
-(**Recommended**) Use python virutal environment with conda（<https://anaconda.org/>）
+(**Recommended**) Using python virutal environment with conda（<https://anaconda.org/>）
 ```shell
 conda create -n SEDR_Env python=3.8 pip
 conda activate SEDR_Env
@@ -49,11 +48,11 @@ pip install -r requirements.txt
 
 SDER utilizes anndata (based on Scanpy) as input. We provide three examples:
 
-1. `run_SEDR_10x_Genomics_Visium.py`: The demo code for *'Visium 10x Genomics'* data.
+1. `run_SEDR_10x_Genomics_Visium.py`: The demo code for *'Visium 10x Genomics'* data (<https://support.10xgenomics.com/spatial-gene-expression/datasets>).
    
    ![](figure/Visium_result.jpg)
 
-2. `run_SEDR_DLPFC_data.py`: The demo code for *'LIBD human dorsolateral prefrontal cortex (DLPFC, <http://research.libd.org/spatialLIBD/>)'* data .
+2. `run_SEDR_DLPFC_data.py`: The demo code for *'LIBD human dorsolateral prefrontal cortex (DLPFC, <http://research.libd.org/spatialLIBD/>)'* data. The raw data are publicly available from the Globus endpoint ‘jhpce#HumanPilot10x’ that is also listed at <http://research.libd.org/globus>.
    
    ![](figure/DLPFC_result.jpg)
 
