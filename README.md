@@ -46,7 +46,23 @@ pip install -r requirements.txt
 
 ## Quick Start:
 
-SDER utilizes anndata (based on Scanpy) as input. We provide three examples:
+SDER utilizes anndata (based on Scanpy) as input, and outputs a latent representation, saved in `SED_result.npz`. User can extract the SEDR feature in **Python** as:
+```shell
+saved_result = np.load(os.path.join(save_path, "SED_result.npz"))
+sed_feat = saved_result["sed_feat"]
+...
+```
+or in **R** with *'reticulate'* package as:
+```shell
+library(reticulate)
+np <- import("numpy")
+saved_result <- np$load("SED_result.npz")
+sed_feat = saved_result$f[["sed_feat"]]
+...
+```
+
+
+We also provide three examples:
 
 1. `run_SEDR_10x_Genomics_Visium.py`: The demo code for *'Visium 10x Genomics'* data (<https://support.10xgenomics.com/spatial-gene-expression/datasets>).
    
