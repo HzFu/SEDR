@@ -81,12 +81,12 @@ We also provide three examples:
 
 This repository contains the source code for the paper:
 
-Huazhu Fu, Hang Xu, Kelvin Chong, Mengwei Li, Hong Kai Lee, Kok Siong Ang, Ao Chen, Ling Shao, Longqi Liu, and Jinmiao Chen, **"Unsupervised Spatial Embedded Deep Representation of Spatial Transcriptomics"**,  *bioRxiv* (2021). <https://>
+Huazhu Fu, Hang Xu, Kelvin Chong, Mengwei Li, Hong Kai Lee, Kok Siong Ang, Ao Chen, Ling Shao, Longqi Liu, and Jinmiao Chen, **"Unsupervised Spatial Embedded Deep Representation of Spatial Transcriptomics"**,  *bioRxiv* (2021). 
 
 **BibTeX**
 
 ```latex
-@article{Fu2021SEDR,
+@article{SEDR_2021,
 	author = {Huazhu Fu, Hang Xu, Kelvin Chong, Mengwei Li, Hong Kai Lee, Kok Siong Ang, Ao Chen, Ling Shao, Longqi Liu, and Jinmiao Chen},
 	title = {Unsupervised Spatial Embedded Deep Representation of Spatial Transcriptomics},
 	year = {2021}, 
