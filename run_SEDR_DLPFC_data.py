@@ -45,8 +45,7 @@ parser.add_argument('--dec_interval', type=int, default=20, help='DEC interval n
 parser.add_argument('--dec_tol', type=float, default=0.00, help='DEC tol.')
 # ______________ Eval clustering Setting _________
 parser.add_argument('--eval_resolution', type=int, default=1, help='Eval cluster number.')
-parser.add_argument('--eval_graph_n', type=int, default=20, help='Eval graph kN tol.')
-parser.add_argument('--eval_cluster_type', type=str, default='Louvain', help='Louvain/KMeans/SpectralClustering')
+parser.add_argument('--eval_graph_n', type=int, default=20, help='Eval graph kN tol.') 
 
 params = parser.parse_args()
 params.device = device
