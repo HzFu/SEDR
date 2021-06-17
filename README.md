@@ -81,7 +81,7 @@ We also provide three examples:
 
 This repository contains the source code for the paper:
 
-Huazhu Fu, Hang Xu, Kelvin Chong, Mengwei Li, Hong Kai Lee, Kok Siong Ang, Ao Chen, Ling Shao, Longqi Liu, and Jinmiao Chen, **"Unsupervised Spatial Embedded Deep Representation of Spatial Transcriptomics"**,  *bioRxiv* (2021). 
+Huazhu Fu, Hang Xu, Kelvin Chong, Mengwei Li, Hong Kai Lee, Kok Siong Ang, Ao Chen, Ling Shao, Longqi Liu, and Jinmiao Chen, **"Unsupervised Spatial Embedded Deep Representation of Spatial Transcriptomics"**,  *bioRxiv* (2021). <https://www.biorxiv.org/content/10.1101/2021.06.15.448542v1>
 
 **BibTeX**
 
@@ -90,6 +90,8 @@ Huazhu Fu, Hang Xu, Kelvin Chong, Mengwei Li, Hong Kai Lee, Kok Siong Ang, Ao Ch
 	author = {Huazhu Fu, Hang Xu, Kelvin Chong, Mengwei Li, Hong Kai Lee, Kok Siong Ang, Ao Chen, Ling Shao, Longqi Liu, and Jinmiao Chen},
 	title = {Unsupervised Spatial Embedded Deep Representation of Spatial Transcriptomics},
 	year = {2021}, 
-	journal = {bioRxiv}
+	journal = {bioRxiv},
+	doi = {10.1101/2021.06.15.448542},
+	URL = {https://www.biorxiv.org/content/10.1101/2021.06.15.448542v1},
 }
 ```
