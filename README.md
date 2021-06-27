@@ -46,10 +46,10 @@ pip install -r requirements.txt
 
 ## Quick Start:
 
-SDER utilizes anndata (based on Scanpy) as input, and outputs a latent representation, saved in `SED_result.npz`. User can extract the SEDR feature in **Python** as:
+SDER utilizes anndata (based on *Scanpy*) as input, and outputs a latent representation, saved in `SED_result.npz`. User can extract the SEDR feature in **Python** as:
 ```shell
-saved_result = np.load(os.path.join(save_path, "SED_result.npz"))
-sed_feat = saved_result["sed_feat"]
+saved_result = np.load(os.path.join(save_path, "SED_result.npz"), allow_pickle=True)
+sed_feat = saved_result["sed_feat"].item()
 ...
 ```
 or in **R** with *'reticulate'* package as:
@@ -77,11 +77,13 @@ We also provide three examples:
    ![](figure/UBC_SEDR_plot.jpg)
 
 
+**More scripts and evaluations could be found in** <https://github.com/JinmiaoChenLab/SEDR/>
+
 ## Citation:
 
-This repository contains the source code for the paper:
+**This repository contains the source code for the paper:**
 
-Huazhu Fu, Hang Xu, Kelvin Chong, Mengwei Li, Hong Kai Lee, Kok Siong Ang, Ao Chen, Ling Shao, Longqi Liu, and Jinmiao Chen, **"Unsupervised Spatial Embedded Deep Representation of Spatial Transcriptomics"**,  *bioRxiv* (2021). <https://www.biorxiv.org/content/10.1101/2021.06.15.448542v1>
+[1] Huazhu Fu, Hang Xu, Kelvin Chong, Mengwei Li, Hong Kai Lee, Kok Siong Ang, Ao Chen, Ling Shao, Longqi Liu, and Jinmiao Chen, **"Unsupervised Spatial Embedded Deep Representation of Spatial Transcriptomics"**,  *bioRxiv* (2021). <https://www.biorxiv.org/content/10.1101/2021.06.15.448542>
 
 **BibTeX**
 
@@ -92,6 +94,6 @@ Huazhu Fu, Hang Xu, Kelvin Chong, Mengwei Li, Hong Kai Lee, Kok Siong Ang, Ao Ch
 	year = {2021}, 
 	journal = {bioRxiv},
 	doi = {10.1101/2021.06.15.448542},
-	URL = {https://www.biorxiv.org/content/10.1101/2021.06.15.448542v1},
+	URL = {https://www.biorxiv.org/content/10.1101/2021.06.15.448542},
 }
 ```
