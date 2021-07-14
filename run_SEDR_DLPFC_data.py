@@ -37,7 +37,7 @@ parser.add_argument('--feat_hidden2', type=int, default=20,
                     help='Dim of DNN hidden 2-layer.')
 parser.add_argument('--gcn_hidden1', type=int, default=32,
                     help='Dim of GCN hidden 1-layer.')
-parser.add_argument('--gcn_hidden2', type=int, default=16,
+parser.add_argument('--gcn_hidden2', type=int, default=8,
                     help='Dim of GCN hidden 2-layer.')
 parser.add_argument('--p_drop', type=float, default=0.2,
                     help='Dropout rate.')
