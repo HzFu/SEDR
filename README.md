@@ -1,5 +1,12 @@
 # SEDR: Unsupervised Spatial Embedded Deep Representation of Spatial Transcriptomics
 
+
+## Note:
+**This repository has been merged into** <https://github.com/JinmiaoChenLab/SEDR/> 
+
+**Please visit (<https://github.com/JinmiaoChenLab/SEDR/>)  for more information and latest update.**
+
+
 ## About:
 
 
@@ -77,7 +84,6 @@ We also provide three examples:
    ![](figure/UBC_SEDR_plot.jpg)
 
 
-**More scripts and evaluations could be found in** <https://github.com/JinmiaoChenLab/SEDR/>
 
 ## Citation:
 
