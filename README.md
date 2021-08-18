@@ -6,6 +6,7 @@
 
 **Please visit (<https://github.com/JinmiaoChenLab/SEDR/>)  for more information and latest update.**
 
+**More analysis and evaluation scripts could be found in** <https://github.com/JinmiaoChenLab/SEDR_analyses/>
 
 ## About:
 

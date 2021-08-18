@@ -26,20 +26,20 @@ parser.add_argument('--k', type=int, default=10, help='parameter k in spatial gr
 parser.add_argument('--knn_distanceType', type=str, default='euclidean',
                     help='graph distance type: euclidean/cosine/correlation')
 parser.add_argument('--epochs', type=int, default=200, help='Number of epochs to train.')
-parser.add_argument('--cell_feat_dim', type=int, default=300, help='Dim of PCA')
+parser.add_argument('--cell_feat_dim', type=int, default=200, help='Dim of PCA')
 parser.add_argument('--feat_hidden1', type=int, default=100, help='Dim of DNN hidden 1-layer.')
 parser.add_argument('--feat_hidden2', type=int, default=20, help='Dim of DNN hidden 2-layer.')
 parser.add_argument('--gcn_hidden1', type=int, default=32, help='Dim of GCN hidden 1-layer.')
-parser.add_argument('--gcn_hidden2', type=int, default=4, help='Dim of GCN hidden 2-layer.')
+parser.add_argument('--gcn_hidden2', type=int, default=8, help='Dim of GCN hidden 2-layer.')
 parser.add_argument('--p_drop', type=float, default=0.2, help='Dropout rate.')
-parser.add_argument('--using_mask', type=bool, default=False, help='Using mask for multi-dataset.')
 parser.add_argument('--using_dec', type=bool, default=True, help='Using DEC loss.')
+parser.add_argument('--using_mask', type=bool, default=False, help='Using mask for multi-dataset.')
 parser.add_argument('--feat_w', type=float, default=10, help='Weight of DNN loss.')
 parser.add_argument('--gcn_w', type=float, default=0.1, help='Weight of GCN loss.')
 parser.add_argument('--dec_kl_w', type=float, default=10, help='Weight of DEC loss.')
 parser.add_argument('--gcn_lr', type=float, default=0.01, help='Initial GNN learning rate.')
 parser.add_argument('--gcn_decay', type=float, default=0.01, help='Initial decay rate.')
-parser.add_argument('--dec_cluster_n', type=int, default=8, help='DEC cluster number.')
+parser.add_argument('--dec_cluster_n', type=int, default=10, help='DEC cluster number.')
 parser.add_argument('--dec_interval', type=int, default=20, help='DEC interval nnumber.')
 parser.add_argument('--dec_tol', type=float, default=0.00, help='DEC tol.')
 # ______________ Eval clustering Setting _________
@@ -67,9 +67,10 @@ params.device = device
 # ‘Targeted_Visium_Human_ColorectalCancer_GeneSignature’, ‘Parent_Visium_Human_ColorectalCancer]
 
 # ################## Data download folder
-data_root = './spatial_datasets/10x_Genomics_Visium/'
+data_root = './data/10x_Genomics_Visium/'
 data_name = 'V1_Breast_Cancer_Block_A_Section_1'
-save_fold = os.path.join('./SEDR_result/10x_Genomics_Visium/', data_name)
+save_fold = os.path.join('./output/10x_Genomics_Visium/', data_name)
+n_clusters = 20
 
 # ################## Load data
 adata_h5 = load_visium_sge(sample_id=data_name, save_path=data_root)
@@ -81,28 +82,48 @@ params.save_path = mk_dir(save_fold)
 print('==== Graph Construction Finished')
 
 # ################## Model training
-sed_net = SEDR_Train(adata_X, graph_dict, params)
+sedr_net = SEDR_Train(adata_X, graph_dict, params)
 if params.using_dec:
-    sed_net.train_with_dec()
+    sedr_net.train_with_dec()
 else:
-    sed_net.train_without_dec()
-sed_feat, _, _, _ = sed_net.process()
+    sedr_net.train_without_dec()
+sedr_feat, _, _, _ = sedr_net.process()
 
-np.savez(os.path.join(params.save_path, "SED_result.npz"), sed_feat=sed_feat, deep_Dim=params.feat_hidden2)
+np.savez(os.path.join(params.save_path, "SEDR_result.npz"), sedr_feat=sedr_feat, deep_Dim=params.feat_hidden2)
 
 # ################## Result plot
-adata_sed = anndata.AnnData(sed_feat)
-adata_sed.uns['spatial'] = adata_h5.uns['spatial']
-adata_sed.obsm['spatial'] = adata_h5.obsm['spatial']
+adata_sedr = anndata.AnnData(sedr_feat)
+adata_sedr.uns['spatial'] = adata_h5.uns['spatial']
+adata_sedr.obsm['spatial'] = adata_h5.obsm['spatial']
 
-sc.pp.neighbors(adata_sed, n_neighbors=params.eval_graph_n)
-sc.tl.umap(adata_sed)
-sc.tl.leiden(adata_sed, key_added="SEDR_leiden", resolution=params.eval_resolution)
-sc.pl.spatial(adata_sed, img_key="hires", color=['SEDR_leiden'])
+sc.pp.neighbors(adata_sedr, n_neighbors=params.eval_graph_n)
+sc.tl.umap(adata_sedr)
+
+
+def res_search_fixed_clus(adata, fixed_clus_count, increment=0.02):
+    '''
+        arg1(adata)[AnnData matrix]
+        arg2(fixed_clus_count)[int]
+        
+        return:
+            resolution[int]
+    '''
+    for res in sorted(list(np.arange(0.2, 2.5, increment)), reverse=True):
+        sc.tl.leiden(adata, random_state=0, resolution=res)
+        count_unique_leiden = len(pd.DataFrame(adata.obs['leiden']).leiden.unique())
+        if count_unique_leiden == fixed_clus_count:
+            break
+    return res
+
+
+eval_resolution = res_search_fixed_clus(adata_sedr, n_clusters)
+sc.tl.leiden(adata_sedr, key_added="SEDR_leiden", resolution=eval_resolution)
+
+sc.pl.spatial(adata_sedr, img_key="hires", color=['SEDR_leiden'])
 plt.savefig(os.path.join(params.save_path, "SEDR_leiden_plot.pdf"), bbox_inches='tight', dpi=150)
 
-df_result = pd.DataFrame(adata_sed.obs['SEDR_leiden'], columns=['SEDR_leiden'])
-df_result.to_csv(os.path.join(params.save_path, "SEDR_leiden_n_"+str(params.eval_resolution)+"_result.tsv"),
+df_result = pd.DataFrame(adata_sedr.obs['SEDR_leiden'], columns=['SEDR_leiden'])
+df_result.to_csv(os.path.join(params.save_path, "SEDR_leiden_n_result.tsv"),
                  sep='\t', index=False)
 
 

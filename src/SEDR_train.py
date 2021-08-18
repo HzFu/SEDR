@@ -100,7 +100,7 @@ class SEDR_Train:
     def train_with_dec(self):
         # initialize cluster parameter
         self.train_without_dec()
-        kmeans = KMeans(n_clusters=self.params.dec_cluster_n, n_init=self.params.dec_cluster_n * 2)
+        kmeans = KMeans(n_clusters=self.params.dec_cluster_n, n_init=self.params.dec_cluster_n * 2, random_state=42)
         test_z, _, _, _ = self.process()
         y_pred_last = np.copy(kmeans.fit_predict(test_z))
 
